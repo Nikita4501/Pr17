@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="a3e6b69eae324a7390c8baa66271159a" Name="Diagram1">
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Appointments" Width="1.5" PointX="5.25" PointY="5.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Cart" Width="1.5" PointX="8.25" PointY="6.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Manufacturers" Width="1.5" PointX="3.75" PointY="10.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.MasterServices" Width="1.5" PointX="8.25" PointY="3.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.OrderItems" Width="1.5" PointX="7.5" PointY="16.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Orders" Width="1.5" PointX="5.25" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Products" Width="1.5" PointX="6" PointY="10.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.ProductTypes" Width="1.5" PointX="3.75" PointY="13" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Roles" Width="1.5" PointX="0.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.ServiceTypes" Width="1.5" PointX="6" PointY="2.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.sysdiagrams" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="CosmeticLodgeModel.Users" Width="1.5" PointX="3" PointY="5.5" IsExpanded="true" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Appointments_Client" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Appointments_Master" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Appointments_ServiceType" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Cart_Products" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Cart_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Products_Manufacturers" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_MasterServices_ServiceTypes" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_MasterServices_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_OrderItems_Orders" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_OrderItems_Products" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Orders_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Products_ProductTypes" ManuallyRouted="false" />
+        <AssociationConnector Association="CosmeticLodgeModel.FK_Users_Roles" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
