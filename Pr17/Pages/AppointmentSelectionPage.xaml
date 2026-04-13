@@ -1,0 +1,28 @@
+﻿<Page x:Class="Pr17.Pages.AppointmentSelectionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Выбор времени">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button x:Name="BackButton" Content="← Назад" Click="BackButton_Click" Margin="10" HorizontalAlignment="Left"/>
+
+        <StackPanel Grid.Row="1" Margin="10">
+            <TextBlock Text="Выберите дату:"/>
+            <DatePicker x:Name="DatePicker" SelectedDateChanged="DatePicker_SelectedDateChanged" Margin="0,5"/>
+        </StackPanel>
+
+        <DataGrid x:Name="SlotsGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" Margin="10"
+                  MouseDoubleClick="SlotsGrid_MouseDoubleClick">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat='dd.MM.yyyy'}"/>
+                <DataGridTextColumn Header="Время" Binding="{Binding Time}"/>
+                <DataGridTextColumn Header="Свободно" Binding="{Binding IsFree}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

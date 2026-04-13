@@ -1,0 +1,55 @@
+﻿<Page x:Class="Pr17.Pages.StartPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Космическая ложа">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Панель управления -->
+        <StackPanel Margin="10">
+            <WrapPanel>
+                <Button x:Name="BackButton" Content="← Назад" Click="BackButton_Click" Margin="5" Width="80"/>
+                <Button x:Name="LoginButton" Content="Вход" Click="LoginButton_Click" Margin="5" Width="80"/>
+                <Button x:Name="AccountButton" Content="Аккаунт" Click="AccountButton_Click" Margin="5" Width="80" Visibility="Collapsed"/>
+                <Button x:Name="ProductsButton" Content="Товары" Click="ProductsButton_Click" Margin="5" Width="80"/>
+            </WrapPanel>
+            <WrapPanel Margin="0,10,0,0">
+                <TextBlock Text="Тип услуги:" VerticalAlignment="Center" Margin="5"/>
+                <ComboBox x:Name="ServiceTypeFilter" Width="200" Margin="5" SelectionChanged="ApplyFilters"/>
+                <TextBlock Text="Мастер:" VerticalAlignment="Center" Margin="5"/>
+                <ComboBox x:Name="MasterFilter" Width="200" Margin="5" SelectionChanged="ApplyFilters"/>
+            </WrapPanel>
+        </StackPanel>
+
+        <!-- Основная область -->
+        <Grid Grid.Row="1" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Список типов услуг -->
+            <GroupBox Header="Услуги" Grid.Column="0" Margin="5">
+                <ListBox x:Name="ServiceTypesListBox" SelectionChanged="ServiceTypesListBox_SelectionChanged"
+                         DisplayMemberPath="Name"/>
+            </GroupBox>
+
+            <!-- Список мастеров выбранной услуги -->
+            <GroupBox Header="Мастера" Grid.Column="1" Margin="5">
+                <ListBox x:Name="MastersListBox" SelectionChanged="MastersListBox_SelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding FullName}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding Specialization}" FontStyle="Italic" Foreground="Gray"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Page>

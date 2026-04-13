@@ -9,5 +9,6 @@ namespace Pr17
     public static class Core
     {
         public static CosmeticLodgeEntities Context = new CosmeticLodgeEntities();
+        public static Users CurrentUser { get; set; }
     }
 }

@@ -1,0 +1,37 @@
+﻿<Page x:Class="Pr17.Pages.ClientAccountPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Личный кабинет">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Button x:Name="BackButton" Content="← Назад" Click="BackButton_Click" Margin="10" HorizontalAlignment="Left"/>
+
+        <TabControl Grid.Row="1" Margin="10">
+            <TabItem Header="Мои записи">
+                <DataGrid x:Name="AppointmentsGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat='dd.MM.yyyy'}"/>
+                        <DataGridTextColumn Header="Время" Binding="{Binding Time}"/>
+                        <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceTypeName}"/>
+                        <DataGridTextColumn Header="Мастер" Binding="{Binding MasterName}"/>
+                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="Мои заказы">
+                <DataGrid x:Name="OrdersGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Дата заказа" Binding="{Binding OrderDate, StringFormat='dd.MM.yyyy'}"/>
+                        <DataGridTextColumn Header="Дата получения" Binding="{Binding DeliveryDate, StringFormat='dd.MM.yyyy'}"/>
+                        <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat='{}{0:C}'}"/>
+                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Page>
