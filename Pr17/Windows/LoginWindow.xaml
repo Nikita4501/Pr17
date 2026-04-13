@@ -1,0 +1,27 @@
+﻿<Window x:Class="Pr17.Windows.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Вход в систему" Height="200" Width="300"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Логин:" Margin="0,5"/>
+        <TextBox x:Name="LoginBox" Grid.Row="1" Margin="0,5"/>
+
+        <TextBlock Grid.Row="2" Text="Пароль:" Margin="0,5"/>
+        <PasswordBox x:Name="PasswordBox" Grid.Row="3" Margin="0,5"/>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10">
+            <Button Content="Войти" Width="80" Margin="5" Click="Login_Click" IsDefault="True"/>
+            <Button Content="Отмена" Width="80" Margin="5" Click="Cancel_Click" IsCancel="True"/>
+        </StackPanel>
+
+        <TextBlock x:Name="ErrorText" Grid.Row="5" Foreground="Red" Margin="0,5" TextWrapping="Wrap"/>
+    </Grid>
+</Window>
