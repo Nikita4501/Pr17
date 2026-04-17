@@ -8,9 +8,11 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Панель управления -->
         <StackPanel Margin="10">
             <WrapPanel>
                 <Button x:Name="LoginButton" Content="Вход" Click="LoginButton_Click" Margin="5" Width="80"/>
+                <Button x:Name="RegisterButton" Content="Регистрация" Click="RegisterButton_Click" Margin="5" Width="90"/>
                 <Button x:Name="AccountButton" Content="Аккаунт" Click="AccountButton_Click" Margin="5" Width="80" Visibility="Collapsed"/>
                 <Button x:Name="LogoutButton" Content="Выход" Click="LogoutButton_Click" Margin="5" Width="80" Visibility="Collapsed"/>
                 <Button x:Name="ProductsButton" Content="Товары" Click="ProductsButton_Click" Margin="5" Width="80"/>
@@ -23,17 +25,20 @@
             </WrapPanel>
         </StackPanel>
 
+        <!-- Основная область -->
         <Grid Grid.Row="1" Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
+            <!-- Список типов услуг -->
             <GroupBox Header="Услуги" Grid.Column="0" Margin="5">
                 <ListBox x:Name="ServiceTypesListBox" SelectionChanged="ServiceTypesListBox_SelectionChanged"
                          DisplayMemberPath="Name"/>
             </GroupBox>
 
+            <!-- Список мастеров выбранной услуги -->
             <GroupBox Header="Мастера" Grid.Column="1" Margin="5">
                 <ListBox x:Name="MastersListBox" SelectionChanged="MastersListBox_SelectionChanged">
                     <ListBox.ItemTemplate>

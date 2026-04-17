@@ -34,22 +34,17 @@ namespace Pr17.Pages
             if (Core.CurrentUser != null)
             {
                 LoginButton.Visibility = Visibility.Collapsed;
+                RegisterButton.Visibility = Visibility.Collapsed;
                 AccountButton.Visibility = Visibility.Visible;
                 LogoutButton.Visibility = Visibility.Visible;
             }
             else
             {
                 LoginButton.Visibility = Visibility.Visible;
+                RegisterButton.Visibility = Visibility.Visible;
                 AccountButton.Visibility = Visibility.Collapsed;
                 LogoutButton.Visibility = Visibility.Collapsed;
             }
-        }
-
-        private void LogoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            Core.CurrentUser = null;
-            UpdateLoginUI();
-            NavigationService?.Navigate(new StartPage());
         }
 
         private void ApplyFilters(object sender, SelectionChangedEventArgs e)
@@ -113,6 +108,25 @@ namespace Pr17.Pages
             }
         }
 
+        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        {
+            var registerWindow = new RegisterWindow();
+            registerWindow.ShowDialog();
+            UpdateLoginUI();
+        }
+
+        private void AccountButton_Click(object sender, RoutedEventArgs e)
+        {
+            RedirectByRole();
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            Core.CurrentUser = null;
+            UpdateLoginUI();
+            NavigationService?.Navigate(new StartPage());
+        }
+
         private void RedirectByRole()
         {
             if (Core.CurrentUser == null) return;
@@ -135,9 +149,8 @@ namespace Pr17.Pages
         }
 
         private void ProductsButton_Click(object sender, RoutedEventArgs e)
-            => NavigationService?.Navigate(new ProductsPage());
-
-        private void AccountButton_Click(object sender, RoutedEventArgs e)
-            => RedirectByRole();
+        {
+            NavigationService?.Navigate(new ProductsPage());
+        }
     }
 }
