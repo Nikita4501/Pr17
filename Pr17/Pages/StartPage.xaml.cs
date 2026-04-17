@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Pr17.Windows;
@@ -7,6 +8,13 @@ namespace Pr17.Pages
 {
     public partial class StartPage : Page
     {
+        public class MasterInfo
+        {
+            public int Id { get; set; }
+            public string FullName { get; set; }
+            public string Specialization { get; set; }
+        }
+
         public StartPage()
         {
             InitializeComponent();
@@ -18,15 +26,30 @@ namespace Pr17.Pages
         {
             var serviceTypes = Core.Context.ServiceTypes.ToList();
             ServiceTypesListBox.ItemsSource = serviceTypes;
-            ServiceTypeFilter.ItemsSource = serviceTypes;
+
+            var allServiceTypes = new List<ServiceTypes> { new ServiceTypes { Id = 0, Name = "Все" } };
+            allServiceTypes.AddRange(serviceTypes);
+            ServiceTypeFilter.ItemsSource = allServiceTypes;
             ServiceTypeFilter.DisplayMemberPath = "Name";
+            ServiceTypeFilter.SelectedIndex = 0;
 
             var masters = Core.Context.Users
                 .Where(u => u.Roles.Name == "Мастер")
-                .Select(u => new { u.Id, FullName = u.LastName + " " + u.FirstName, u.Specialization })
+                .Select(u => new MasterInfo
+                {
+                    Id = u.Id,
+                    FullName = u.LastName + " " + u.FirstName,
+                    Specialization = u.Specialization
+                })
                 .ToList();
-            MasterFilter.ItemsSource = masters;
+
+            var allMasters = new List<MasterInfo> { new MasterInfo { Id = 0, FullName = "Все", Specialization = "" } };
+            allMasters.AddRange(masters);
+            MasterFilter.ItemsSource = allMasters;
             MasterFilter.DisplayMemberPath = "FullName";
+            MasterFilter.SelectedIndex = 0;
+
+            MastersListBox.ItemsSource = null;
         }
 
         private void UpdateLoginUI()
@@ -47,54 +70,87 @@ namespace Pr17.Pages
             }
         }
 
-        private void ApplyFilters(object sender, SelectionChangedEventArgs e)
-        {
-            var selectedType = ServiceTypeFilter.SelectedItem as ServiceTypes;
-            var selectedMaster = MasterFilter.SelectedItem;
-
-            int? masterId = selectedMaster != null
-                ? (int?)selectedMaster.GetType().GetProperty("Id").GetValue(selectedMaster)
-                : null;
-
-            var mastersQuery = Core.Context.MasterServices.AsQueryable();
-            if (selectedType != null)
-                mastersQuery = mastersQuery.Where(ms => ms.ServiceTypeId == selectedType.Id);
-            if (masterId.HasValue)
-                mastersQuery = mastersQuery.Where(ms => ms.MasterId == masterId.Value);
-
-            var filteredMasters = mastersQuery
-                .Select(ms => ms.Users)
-                .Where(u => u.Roles.Name == "Мастер")
-                .Select(u => new { u.Id, FullName = u.LastName + " " + u.FirstName, u.Specialization })
-                .Distinct()
-                .ToList();
-
-            MastersListBox.ItemsSource = filteredMasters;
-        }
-
         private void ServiceTypesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedType = ServiceTypesListBox.SelectedItem as ServiceTypes;
             if (selectedType != null)
             {
-                var masters = Core.Context.MasterServices
-                    .Where(ms => ms.ServiceTypeId == selectedType.Id)
-                    .Select(ms => ms.Users)
-                    .Where(u => u.Roles.Name == "Мастер")
-                    .Select(u => new { u.Id, FullName = u.LastName + " " + u.FirstName, u.Specialization })
-                    .ToList();
-                MastersListBox.ItemsSource = masters;
+                foreach (ServiceTypes item in ServiceTypeFilter.Items)
+                {
+                    if (item.Id == selectedType.Id)
+                    {
+                        ServiceTypeFilter.SelectedItem = item;
+                        break;
+                    }
+                }
+                LoadMastersForServiceType(selectedType.Id);
+            }
+            else
+            {
+                MastersListBox.ItemsSource = null;
+            }
+        }
+
+        private void LoadMastersForServiceType(int serviceTypeId)
+        {
+            var selectedMasterFilter = MasterFilter.SelectedItem as MasterInfo;
+            int? masterId = (selectedMasterFilter != null && selectedMasterFilter.Id != 0) ? selectedMasterFilter.Id : (int?)null;
+
+            var query = Core.Context.MasterServices
+                .Where(ms => ms.ServiceTypeId == serviceTypeId);
+
+            if (masterId.HasValue)
+                query = query.Where(ms => ms.MasterId == masterId.Value);
+
+            var masters = query
+                .Select(ms => ms.Users)
+                .Where(u => u.Roles.Name == "Мастер" && u.IsActive)
+                .Select(u => new MasterInfo
+                {
+                    Id = u.Id,
+                    FullName = u.LastName + " " + u.FirstName,
+                    Specialization = u.Specialization
+                })
+                .Distinct()
+                .ToList();
+
+            MastersListBox.ItemsSource = masters;
+        }
+
+        private void ApplyFilters(object sender, SelectionChangedEventArgs e)
+        {
+            ServiceTypes selectedType = null;
+
+            var filterType = ServiceTypeFilter.SelectedItem as ServiceTypes;
+            if (filterType != null && filterType.Id != 0)
+                selectedType = filterType;
+            else
+            {
+                selectedType = ServiceTypesListBox.SelectedItem as ServiceTypes;
+            }
+
+            if (selectedType != null)
+            {
+                if (ServiceTypesListBox.SelectedItem == null ||
+                    (ServiceTypesListBox.SelectedItem as ServiceTypes).Id != selectedType.Id)
+                {
+                    ServiceTypesListBox.SelectedItem = selectedType;
+                }
+                LoadMastersForServiceType(selectedType.Id);
+            }
+            else
+            {
+                MastersListBox.ItemsSource = null;
             }
         }
 
         private void MastersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedMaster = MastersListBox.SelectedItem;
+            var selectedMaster = MastersListBox.SelectedItem as MasterInfo;
             var selectedType = ServiceTypesListBox.SelectedItem as ServiceTypes;
             if (selectedMaster != null && selectedType != null)
             {
-                int masterId = (int)selectedMaster.GetType().GetProperty("Id").GetValue(selectedMaster);
-                NavigationService?.Navigate(new AppointmentSelectionPage(selectedType.Id, masterId));
+                NavigationService?.Navigate(new AppointmentSelectionPage(selectedType.Id, selectedMaster.Id));
             }
         }
 

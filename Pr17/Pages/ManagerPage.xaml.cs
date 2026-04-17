@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualBasic;
-using System;
+﻿using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.VisualBasic;
 
 namespace Pr17.Pages
 {
@@ -11,7 +11,7 @@ namespace Pr17.Pages
         public ManagerPage()
         {
             InitializeComponent();
-            if (Core.CurrentUser?.Roles.Name != "Менеджер")
+            if (Core.CurrentUser?.Roles?.Name != "Менеджер")
             {
                 MessageBox.Show("Доступ запрещён");
                 NavigationService?.GoBack();
@@ -32,11 +32,7 @@ namespace Pr17.Pages
 
         private void LoadAppointments(string searchText = null)
         {
-            var query = Core.Context.Appointments
-                .Include("Users")
-                .Include("Users1")
-                .Include("ServiceTypes")
-                .AsQueryable();
+            var query = Core.Context.Appointments.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchText))
             {
@@ -66,14 +62,65 @@ namespace Pr17.Pages
 
         private void CreateAppointment_Click(object sender, RoutedEventArgs e)
         {
-            var client = SelectClient();
-            if (client == null) return;
+            string input = Interaction.InputBox("Введите ФИО или телефон клиента", "Поиск клиента");
+            if (string.IsNullOrWhiteSpace(input)) return;
 
-            var serviceType = SelectServiceType();
-            if (serviceType == null) return;
+            var clients = Core.Context.Users
+                .Where(u => u.Roles.Name == "Клиент" &&
+                    ((u.LastName + " " + u.FirstName + " " + u.MiddleName).Contains(input) ||
+                     u.Phone.Contains(input)))
+                .ToList();
 
-            var master = SelectMasterForService(serviceType.Id);
-            if (master == null) return;
+            Users client = null;
+            if (clients.Count == 0)
+            {
+                MessageBox.Show("Клиент не найден");
+                return;
+            }
+            else if (clients.Count == 1)
+                client = clients[0];
+            else
+            {
+                var win = new Window { Title = "Выберите клиента", Width = 300, Height = 200, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+                var lb = new ListBox { ItemsSource = clients, DisplayMemberPath = "FullName" };
+                lb.SelectionChanged += (s, ev) => win.DialogResult = true;
+                win.Content = lb;
+                if (win.ShowDialog() == true && lb.SelectedItem != null)
+                    client = lb.SelectedItem as Users;
+                else return;
+            }
+
+            var services = Core.Context.ServiceTypes.ToList();
+            var serviceWin = new Window { Title = "Выберите услугу", Width = 250, Height = 200, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            var serviceLb = new ListBox { ItemsSource = services, DisplayMemberPath = "Name" };
+            serviceLb.SelectionChanged += (s, ev) => serviceWin.DialogResult = true;
+            serviceWin.Content = serviceLb;
+            if (serviceWin.ShowDialog() != true || serviceLb.SelectedItem == null) return;
+            var serviceType = serviceLb.SelectedItem as ServiceTypes;
+
+            var masters = Core.Context.MasterServices
+                .Where(ms => ms.ServiceTypeId == serviceType.Id)
+                .Select(ms => ms.Users)
+                .Where(u => u.Roles.Name == "Мастер")
+                .ToList();
+            if (!masters.Any())
+            {
+                MessageBox.Show("Нет мастеров для этой услуги");
+                return;
+            }
+            Users master = null;
+            if (masters.Count == 1)
+                master = masters[0];
+            else
+            {
+                var masterWin = new Window { Title = "Выберите мастера", Width = 250, Height = 200 };
+                var masterLb = new ListBox { ItemsSource = masters, DisplayMemberPath = "FullName" };
+                masterLb.SelectionChanged += (s, ev) => masterWin.DialogResult = true;
+                masterWin.Content = masterLb;
+                if (masterWin.ShowDialog() == true && masterLb.SelectedItem != null)
+                    master = masterLb.SelectedItem as Users;
+                else return;
+            }
 
             var slot = SelectTimeSlot(master.Id);
             if (slot == null) return;
@@ -87,31 +134,25 @@ namespace Pr17.Pages
                 Time = slot.Value.Time,
                 Status = "Запланирована"
             };
-
             Core.Context.Appointments.Add(appointment);
             Core.Context.SaveChanges();
             LoadAppointments();
-            MessageBox.Show("Запись создана");
+            MessageBox.Show("Запись успешно создана");
         }
 
         private void RescheduleAppointment_Click(object sender, RoutedEventArgs e)
         {
-            if (AppointmentsGrid.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите запись");
-                return;
-            }
+            if (AppointmentsGrid.SelectedItem == null) return;
+            dynamic sel = AppointmentsGrid.SelectedItem;
+            int id = sel.Id;
+            var app = Core.Context.Appointments.Find(id);
+            if (app == null) return;
 
-            dynamic selected = AppointmentsGrid.SelectedItem;
-            int id = selected.Id;
-            var appointment = Core.Context.Appointments.Find(id);
-            if (appointment == null) return;
-
-            var slot = SelectTimeSlot(appointment.MasterId);
+            var slot = SelectTimeSlot(app.MasterId);
             if (slot == null) return;
 
-            appointment.Date = slot.Value.Date;
-            appointment.Time = slot.Value.Time;
+            app.Date = slot.Value.Date;
+            app.Time = slot.Value.Time;
             Core.Context.SaveChanges();
             LoadAppointments();
             MessageBox.Show("Запись перенесена");
@@ -119,56 +160,82 @@ namespace Pr17.Pages
 
         private void CancelAppointment_Click(object sender, RoutedEventArgs e)
         {
-            if (AppointmentsGrid.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите запись");
-                return;
-            }
-
-            dynamic selected = AppointmentsGrid.SelectedItem;
-            int id = selected.Id;
-            var appointment = Core.Context.Appointments.Find(id);
-            appointment.Status = "Отменена";
+            if (AppointmentsGrid.SelectedItem == null) return;
+            dynamic sel = AppointmentsGrid.SelectedItem;
+            int id = sel.Id;
+            var app = Core.Context.Appointments.Find(id);
+            app.Status = "Отменена";
             Core.Context.SaveChanges();
             LoadAppointments();
             MessageBox.Show("Запись отменена");
         }
 
+        private (DateTime Date, TimeSpan Time)? SelectTimeSlot(int masterId)
+        {
+            var win = new Window { Title = "Выберите дату и время", Width = 300, Height = 200, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+            var grid = new Grid();
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var dp = new DatePicker { SelectedDate = DateTime.Today, Margin = new Thickness(5) };
+            Grid.SetRow(dp, 0);
+            grid.Children.Add(dp);
+
+            var cb = new ComboBox { Margin = new Thickness(5) };
+            var slots = Enumerable.Range(9, 10).Select(h => new TimeSpan(h, 0, 0)).ToList();
+            cb.ItemsSource = slots;
+            cb.SelectedIndex = 0;
+            Grid.SetRow(cb, 1);
+            grid.Children.Add(cb);
+
+            var btn = new Button { Content = "OK", Width = 80, Margin = new Thickness(5) };
+            btn.Click += (s, e) => win.DialogResult = true;
+            Grid.SetRow(btn, 2);
+            grid.Children.Add(btn);
+
+            win.Content = grid;
+            if (win.ShowDialog() == true)
+            {
+                DateTime date = dp.SelectedDate ?? DateTime.Today;
+                TimeSpan time = (TimeSpan)cb.SelectedItem;
+                bool isFree = !Core.Context.Appointments.Any(a =>
+                    a.MasterId == masterId && a.Date == date && a.Time == time && a.Status != "Отменена");
+                if (!isFree)
+                {
+                    MessageBox.Show("Это время уже занято");
+                    return null;
+                }
+                return (date, time);
+            }
+            return null;
+        }
+
         private void LoadOrders()
         {
-            var data = Core.Context.Orders
-                .Include("Users")
-                .Include("OrderItems")
-                .Select(o => new
-                {
-                    o.Id,
-                    ClientName = o.Users.LastName + " " + o.Users.FirstName,
-                    o.OrderDate,
-                    o.DeliveryDate,
-                    TotalAmount = o.OrderItems.Sum(oi => oi.Price * oi.Quantity),
-                    o.Status
-                }).ToList();
-
+            var data = Core.Context.Orders.Select(o => new
+            {
+                o.Id,
+                ClientName = o.Users.LastName + " " + o.Users.FirstName,
+                o.OrderDate,
+                o.DeliveryDate,
+                TotalAmount = o.OrderItems.Sum(oi => oi.Price * oi.Quantity),
+                o.Status
+            }).ToList();
             OrdersGrid.ItemsSource = data;
         }
 
         private void MarkOrderDelivered_Click(object sender, RoutedEventArgs e)
         {
-            if (OrdersGrid.SelectedItem == null)
-            {
-                MessageBox.Show("Выберите заказ");
-                return;
-            }
-
-            dynamic selected = OrdersGrid.SelectedItem;
-            int id = selected.Id;
+            if (OrdersGrid.SelectedItem == null) return;
+            dynamic sel = OrdersGrid.SelectedItem;
+            int id = sel.Id;
             var order = Core.Context.Orders.Find(id);
-            if (order.Status != "Новый" && order.Status != "В обработке")
+            if (order.Status == "Выдан")
             {
-                MessageBox.Show("Заказ уже выдан или отменён");
+                MessageBox.Show("Заказ уже выдан");
                 return;
             }
-
             order.Status = "Выдан";
             Core.Context.SaveChanges();
             LoadOrders();
@@ -177,28 +244,21 @@ namespace Pr17.Pages
 
         private void LoadProducts()
         {
-            var data = Core.Context.Products
-                .Select(p => new
-                {
-                    p.Id,
-                    p.Name,
-                    p.Price,
-                    p.Discount,
-                    p.IsActive
-                }).ToList();
-
+            var data = Core.Context.Products.Select(p => new
+            {
+                p.Id,
+                p.Name,
+                p.Price,
+                p.Discount,
+                p.IsActive
+            }).ToList();
             ProductsGrid.ItemsSource = data;
         }
 
         private void AddProduct_Click(object sender, RoutedEventArgs e)
         {
-            var product = new Products
-            {
-                Name = "Новый товар",
-                Price = 0,
-                IsActive = true
-            };
-            if (EditProductDialog(product))
+            var product = new Products { Name = "Новый товар", Price = 0, IsActive = true };
+            if (EditProductDialog(product, true))
             {
                 Core.Context.Products.Add(product);
                 Core.Context.SaveChanges();
@@ -209,21 +269,36 @@ namespace Pr17.Pages
         private void EditProduct_Click(object sender, RoutedEventArgs e)
         {
             if (ProductsGrid.SelectedItem == null) return;
-            dynamic selected = ProductsGrid.SelectedItem;
-            int id = selected.Id;
+            dynamic sel = ProductsGrid.SelectedItem;
+            int id = sel.Id;
             var product = Core.Context.Products.Find(id);
-            if (EditProductDialog(product))
+            if (EditProductDialog(product, false))
             {
                 Core.Context.SaveChanges();
                 LoadProducts();
             }
         }
 
+        private bool EditProductDialog(Products product, bool isNew)
+        {
+            string name = Interaction.InputBox("Название товара", "Редактирование", product.Name);
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            string priceStr = Interaction.InputBox("Цена", "Редактирование", product.Price.ToString());
+            if (!decimal.TryParse(priceStr, out decimal price)) return false;
+            string discountStr = Interaction.InputBox("Скидка % (0-100)", "Редактирование", product.Discount.ToString());
+            if (!int.TryParse(discountStr, out int discount) || discount < 0 || discount > 100) return false;
+
+            product.Name = name;
+            product.Price = price;
+            product.Discount = discount;
+            return true;
+        }
+
         private void ToggleProductActive_Click(object sender, RoutedEventArgs e)
         {
             if (ProductsGrid.SelectedItem == null) return;
-            dynamic selected = ProductsGrid.SelectedItem;
-            int id = selected.Id;
+            dynamic sel = ProductsGrid.SelectedItem;
+            int id = sel.Id;
             var product = Core.Context.Products.Find(id);
             product.IsActive = !product.IsActive;
             Core.Context.SaveChanges();
@@ -233,10 +308,9 @@ namespace Pr17.Pages
         private void SetDiscount_Click(object sender, RoutedEventArgs e)
         {
             if (ProductsGrid.SelectedItem == null) return;
-            dynamic selected = ProductsGrid.SelectedItem;
-            int id = selected.Id;
+            dynamic sel = ProductsGrid.SelectedItem;
+            int id = sel.Id;
             var product = Core.Context.Products.Find(id);
-
             string input = Interaction.InputBox("Введите скидку в %", "Установка скидки", product.Discount.ToString());
             if (int.TryParse(input, out int discount) && discount >= 0 && discount <= 100)
             {
@@ -244,22 +318,7 @@ namespace Pr17.Pages
                 Core.Context.SaveChanges();
                 LoadProducts();
             }
-            else
-            {
-                MessageBox.Show("Некорректное значение");
-            }
-        }
-
-        private bool EditProductDialog(Products product)
-        {
-            string name = Interaction.InputBox("Название", "Редактирование товара", product.Name);
-            if (string.IsNullOrWhiteSpace(name)) return false;
-            string priceStr = Interaction.InputBox("Цена", "Редактирование товара", product.Price.ToString());
-            if (!decimal.TryParse(priceStr, out decimal price)) return false;
-
-            product.Name = name;
-            product.Price = price;
-            return true;
+            else MessageBox.Show("Некорректное значение");
         }
 
         private void LoadManufacturers()
@@ -282,7 +341,7 @@ namespace Pr17.Pages
         {
             if (ManufacturersGrid.SelectedItem is Manufacturers man)
             {
-                string name = Microsoft.VisualBasic.Interaction.InputBox("Новое название", "Редактирование", man.Name);
+                string name = Interaction.InputBox("Новое название", "Редактирование", man.Name);
                 if (!string.IsNullOrWhiteSpace(name))
                 {
                     man.Name = name;
@@ -299,7 +358,7 @@ namespace Pr17.Pages
 
         private void AddProductType_Click(object sender, RoutedEventArgs e)
         {
-            string name = Microsoft.VisualBasic.Interaction.InputBox("Название типа товара", "Добавление");
+            string name = Interaction.InputBox("Название типа товара", "Добавление");
             if (!string.IsNullOrWhiteSpace(name))
             {
                 Core.Context.ProductTypes.Add(new ProductTypes { Name = name });
@@ -312,7 +371,7 @@ namespace Pr17.Pages
         {
             if (ProductTypesGrid.SelectedItem is ProductTypes pt)
             {
-                string name = Microsoft.VisualBasic.Interaction.InputBox("Новое название", "Редактирование", pt.Name);
+                string name = Interaction.InputBox("Новое название", "Редактирование", pt.Name);
                 if (!string.IsNullOrWhiteSpace(name))
                 {
                     pt.Name = name;
@@ -329,7 +388,7 @@ namespace Pr17.Pages
 
         private void AddServiceType_Click(object sender, RoutedEventArgs e)
         {
-            string name = Microsoft.VisualBasic.Interaction.InputBox("Название типа услуги", "Добавление");
+            string name = Interaction.InputBox("Название типа услуги", "Добавление");
             if (!string.IsNullOrWhiteSpace(name))
             {
                 Core.Context.ServiceTypes.Add(new ServiceTypes { Name = name });
@@ -342,7 +401,7 @@ namespace Pr17.Pages
         {
             if (ServiceTypesGrid.SelectedItem is ServiceTypes st)
             {
-                string name = Microsoft.VisualBasic.Interaction.InputBox("Новое название", "Редактирование", st.Name);
+                string name = Interaction.InputBox("Новое название", "Редактирование", st.Name);
                 if (!string.IsNullOrWhiteSpace(name))
                 {
                     st.Name = name;
@@ -350,140 +409,6 @@ namespace Pr17.Pages
                     LoadServiceTypes();
                 }
             }
-        }
-
-        private Users SelectClient()
-        {
-            string input = Interaction.InputBox("Введите ФИО или телефон клиента", "Поиск клиента");
-            if (string.IsNullOrWhiteSpace(input)) return null;
-
-            var clients = Core.Context.Users
-                .Where(u => u.Roles.Name == "Клиент" &&
-                    ((u.LastName + " " + u.FirstName + " " + u.MiddleName).Contains(input) ||
-                     u.Phone.Contains(input)))
-                .ToList();
-
-            if (clients.Count == 0)
-            {
-                MessageBox.Show("Клиент не найден");
-                return null;
-            }
-
-            if (clients.Count == 1) return clients[0];
-
-            var selectionWindow = new Window
-            {
-                Title = "Выберите клиента",
-                Width = 300,
-                Height = 200,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            var listBox = new ListBox
-            {
-                ItemsSource = clients,
-                DisplayMemberPath = "FullName"
-            };
-            listBox.SelectionChanged += (s, e) => selectionWindow.DialogResult = true;
-            selectionWindow.Content = listBox;
-            if (selectionWindow.ShowDialog() == true)
-                return listBox.SelectedItem as Users;
-            return null;
-        }
-
-        private ServiceTypes SelectServiceType()
-        {
-            var types = Core.Context.ServiceTypes.ToList();
-            var selectionWindow = new Window
-            {
-                Title = "Выберите услугу",
-                Width = 250,
-                Height = 200
-            };
-            var listBox = new ListBox { ItemsSource = types, DisplayMemberPath = "Name" };
-            listBox.SelectionChanged += (s, e) => selectionWindow.DialogResult = true;
-            selectionWindow.Content = listBox;
-            if (selectionWindow.ShowDialog() == true)
-                return listBox.SelectedItem as ServiceTypes;
-            return null;
-        }
-
-        private Users SelectMasterForService(int serviceTypeId)
-        {
-            var masters = Core.Context.MasterServices
-                .Where(ms => ms.ServiceTypeId == serviceTypeId)
-                .Select(ms => ms.Users)
-                .Where(u => u.Roles.Name == "Мастер")
-                .ToList();
-
-            if (masters.Count == 0)
-            {
-                MessageBox.Show("Нет мастеров для этой услуги");
-                return null;
-            }
-
-            var selectionWindow = new Window
-            {
-                Title = "Выберите мастера",
-                Width = 250,
-                Height = 200
-            };
-            var listBox = new ListBox
-            {
-                ItemsSource = masters,
-                DisplayMemberPath = "FullName"
-            };
-            listBox.SelectionChanged += (s, e) => selectionWindow.DialogResult = true;
-            selectionWindow.Content = listBox;
-            if (selectionWindow.ShowDialog() == true)
-                return listBox.SelectedItem as Users;
-            return null;
-        }
-
-        private (DateTime Date, TimeSpan Time)? SelectTimeSlot(int masterId)
-        {
-            var window = new Window
-            {
-                Title = "Выберите дату и время",
-                Width = 300,
-                Height = 250,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            var grid = new Grid();
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            var datePicker = new DatePicker { SelectedDate = DateTime.Today, Margin = new Thickness(5) };
-            Grid.SetRow(datePicker, 0);
-            grid.Children.Add(datePicker);
-
-            var comboBox = new ComboBox { Margin = new Thickness(5) };
-            var slots = Enumerable.Range(9, 10).Select(h => new TimeSpan(h, 0, 0)).ToList();
-            comboBox.ItemsSource = slots;
-            comboBox.SelectedIndex = 0;
-            Grid.SetRow(comboBox, 1);
-            grid.Children.Add(comboBox);
-
-            var button = new Button { Content = "OK", Margin = new Thickness(5), Width = 80 };
-            button.Click += (s, e) => window.DialogResult = true;
-            Grid.SetRow(button, 2);
-            grid.Children.Add(button);
-
-            window.Content = grid;
-            if (window.ShowDialog() == true)
-            {
-                DateTime date = datePicker.SelectedDate ?? DateTime.Today;
-                TimeSpan time = (TimeSpan)comboBox.SelectedItem;
-                bool isFree = !Core.Context.Appointments.Any(a =>
-                    a.MasterId == masterId && a.Date == date && a.Time == time && a.Status != "Отменена");
-                if (!isFree)
-                {
-                    MessageBox.Show("Это время уже занято");
-                    return null;
-                }
-                return (date, time);
-            }
-            return null;
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
