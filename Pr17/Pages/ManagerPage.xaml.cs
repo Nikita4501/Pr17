@@ -20,7 +20,6 @@ namespace Pr17.Pages
             LoadAllData();
         }
 
-        // ========== ОБЩИЕ МЕТОДЫ ЗАГРУЗКИ ==========
         private void LoadAllData()
         {
             LoadAppointments();
@@ -31,7 +30,6 @@ namespace Pr17.Pages
             LoadServiceTypes();
         }
 
-        // ---------- ЗАПИСИ ----------
         private void LoadAppointments(string searchText = null)
         {
             var query = Core.Context.Appointments
@@ -68,18 +66,15 @@ namespace Pr17.Pages
 
         private void CreateAppointment_Click(object sender, RoutedEventArgs e)
         {
-            // Поиск клиента: открываем простое окно с вводом телефона или выбором из списка
             var client = SelectClient();
             if (client == null) return;
 
-            // Выбор услуги и мастера
             var serviceType = SelectServiceType();
             if (serviceType == null) return;
 
             var master = SelectMasterForService(serviceType.Id);
             if (master == null) return;
 
-            // Выбор даты и времени
             var slot = SelectTimeSlot(master.Id);
             if (slot == null) return;
 
@@ -139,7 +134,6 @@ namespace Pr17.Pages
             MessageBox.Show("Запись отменена");
         }
 
-        // ---------- ЗАКАЗЫ ----------
         private void LoadOrders()
         {
             var data = Core.Context.Orders
@@ -181,7 +175,6 @@ namespace Pr17.Pages
             MessageBox.Show("Заказ отмечен как выданный");
         }
 
-        // ---------- ТОВАРЫ ----------
         private void LoadProducts()
         {
             var data = Core.Context.Products
@@ -205,7 +198,6 @@ namespace Pr17.Pages
                 Price = 0,
                 IsActive = true
             };
-            // Упрощённо: открыть окно редактирования
             if (EditProductDialog(product))
             {
                 Core.Context.Products.Add(product);
@@ -270,7 +262,6 @@ namespace Pr17.Pages
             return true;
         }
 
-        // ---------- ПРОИЗВОДИТЕЛИ ----------
         private void LoadManufacturers()
         {
             ManufacturersGrid.ItemsSource = Core.Context.Manufacturers.ToList();
@@ -301,7 +292,6 @@ namespace Pr17.Pages
             }
         }
 
-        // ---------- ТИПЫ ТОВАРОВ ----------
         private void LoadProductTypes()
         {
             ProductTypesGrid.ItemsSource = Core.Context.ProductTypes.ToList();
@@ -332,7 +322,6 @@ namespace Pr17.Pages
             }
         }
 
-        // ---------- ТИПЫ УСЛУГ ----------
         private void LoadServiceTypes()
         {
             ServiceTypesGrid.ItemsSource = Core.Context.ServiceTypes.ToList();
@@ -363,7 +352,6 @@ namespace Pr17.Pages
             }
         }
 
-        // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ЗАПИСЕЙ ==========
         private Users SelectClient()
         {
             string input = Interaction.InputBox("Введите ФИО или телефон клиента", "Поиск клиента");
@@ -383,7 +371,6 @@ namespace Pr17.Pages
 
             if (clients.Count == 1) return clients[0];
 
-            // Если несколько, показываем простой выбор через список
             var selectionWindow = new Window
             {
                 Title = "Выберите клиента",
@@ -454,7 +441,6 @@ namespace Pr17.Pages
 
         private (DateTime Date, TimeSpan Time)? SelectTimeSlot(int masterId)
         {
-            // Упрощённый выбор: показываем дату и время в одном окне
             var window = new Window
             {
                 Title = "Выберите дату и время",
@@ -472,7 +458,6 @@ namespace Pr17.Pages
             grid.Children.Add(datePicker);
 
             var comboBox = new ComboBox { Margin = new Thickness(5) };
-            // Генерация слотов 9-18 часов
             var slots = Enumerable.Range(9, 10).Select(h => new TimeSpan(h, 0, 0)).ToList();
             comboBox.ItemsSource = slots;
             comboBox.SelectedIndex = 0;
@@ -489,7 +474,6 @@ namespace Pr17.Pages
             {
                 DateTime date = datePicker.SelectedDate ?? DateTime.Today;
                 TimeSpan time = (TimeSpan)comboBox.SelectedItem;
-                // Проверка занятости
                 bool isFree = !Core.Context.Appointments.Any(a =>
                     a.MasterId == masterId && a.Date == date && a.Time == time && a.Status != "Отменена");
                 if (!isFree)
@@ -502,7 +486,6 @@ namespace Pr17.Pages
             return null;
         }
 
-        // ========== НАВИГАЦИЯ ==========
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             NavigationService?.GoBack();

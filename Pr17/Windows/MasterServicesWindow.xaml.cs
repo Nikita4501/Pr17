@@ -32,11 +32,9 @@ namespace Pr17.Windows
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Удаляем старые связи
             var existing = Core.Context.MasterServices.Where(ms => ms.MasterId == _masterId);
             Core.Context.MasterServices.RemoveRange(existing);
 
-            // Добавляем выбранные
             foreach (ServiceTypes service in ServicesListBox.SelectedItems)
             {
                 Core.Context.MasterServices.Add(new MasterServices

@@ -37,7 +37,6 @@ namespace Pr17.Pages
             var userData = ((Button)sender).Tag;
             int userId = (int)userData.GetType().GetProperty("Id").GetValue(userData);
             var user = Core.Context.Users.Find(userId);
-            // Показать окно выбора роли и обновить
         }
 
         private void ToggleActive_Click(object sender, RoutedEventArgs e)
@@ -62,7 +61,6 @@ namespace Pr17.Pages
 
         private void AddUserButton_Click(object sender, RoutedEventArgs e)
         {
-            // Открыть окно добавления пользователя
         }
 
         private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService?.GoBack();

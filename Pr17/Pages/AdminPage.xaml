@@ -13,13 +13,21 @@
             <Button x:Name="AddUserButton" Content="Добавить пользователя" Click="AddUserButton_Click" Margin="10" HorizontalAlignment="Left"/>
         </StackPanel>
 
-        <DataGrid x:Name="UsersGrid" Grid.Row="1" AutoGenerateColumns="False" Margin="10">
+        <DataGrid x:Name="UsersGrid" Grid.Row="1" AutoGenerateColumns="False" Margin="10" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
                 <DataGridTextColumn Header="Логин" Binding="{Binding Login}"/>
                 <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}"/>
                 <DataGridTextColumn Header="Роль" Binding="{Binding RoleName}"/>
-                <DataGridCheckBoxColumn Header="Активен" Binding="{Binding IsActive}"/>
+
+                <DataGridTemplateColumn Header="Активен">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding IsActive, Mode=OneWay}" IsEnabled="False" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <DataGridTemplateColumn Header="Действия">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

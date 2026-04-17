@@ -46,7 +46,6 @@ namespace Pr17.Windows
                 catch { /* Игнорируем ошибки загрузки изображения */ }
             }
 
-            // Проверка доступности добавления в корзину
             AddToCartButton.IsEnabled = Core.CurrentUser != null && _product.IsActive;
         }
 

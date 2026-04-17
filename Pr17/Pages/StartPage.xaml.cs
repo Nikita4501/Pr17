@@ -16,7 +16,6 @@ namespace Pr17.Pages
 
         private void LoadData()
         {
-            // Загрузка фильтров
             var serviceTypes = Core.Context.ServiceTypes.ToList();
             ServiceTypesListBox.ItemsSource = serviceTypes;
             ServiceTypeFilter.ItemsSource = serviceTypes;
@@ -36,12 +35,21 @@ namespace Pr17.Pages
             {
                 LoginButton.Visibility = Visibility.Collapsed;
                 AccountButton.Visibility = Visibility.Visible;
+                LogoutButton.Visibility = Visibility.Visible;
             }
             else
             {
                 LoginButton.Visibility = Visibility.Visible;
                 AccountButton.Visibility = Visibility.Collapsed;
+                LogoutButton.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            Core.CurrentUser = null;
+            UpdateLoginUI();
+            NavigationService?.Navigate(new StartPage());
         }
 
         private void ApplyFilters(object sender, SelectionChangedEventArgs e)
@@ -108,7 +116,8 @@ namespace Pr17.Pages
         private void RedirectByRole()
         {
             if (Core.CurrentUser == null) return;
-            switch (Core.CurrentUser.Roles.Name)
+            string roleName = Core.CurrentUser.Roles?.Name;
+            switch (roleName)
             {
                 case "Клиент":
                     NavigationService?.Navigate(new ClientAccountPage());
@@ -125,8 +134,10 @@ namespace Pr17.Pages
             }
         }
 
-        private void ProductsButton_Click(object sender, RoutedEventArgs e) => NavigationService?.Navigate(new ProductsPage());
-        private void AccountButton_Click(object sender, RoutedEventArgs e) => NavigationService?.Navigate(new ClientAccountPage());
-        private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService?.GoBack();
+        private void ProductsButton_Click(object sender, RoutedEventArgs e)
+            => NavigationService?.Navigate(new ProductsPage());
+
+        private void AccountButton_Click(object sender, RoutedEventArgs e)
+            => RedirectByRole();
     }
 }

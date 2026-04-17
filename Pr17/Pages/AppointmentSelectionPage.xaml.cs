@@ -25,7 +25,6 @@ namespace Pr17.Pages
 
         private void LoadSlots(DateTime date)
         {
-            // Генерируем временные слоты с 9:00 до 18:00 с шагом 1 час
             var slots = Enumerable.Range(9, 9).Select(hour => new
             {
                 Date = date,

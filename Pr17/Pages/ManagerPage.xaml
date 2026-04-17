@@ -11,27 +11,31 @@
         <Button x:Name="BackButton" Content="← Назад" Click="BackButton_Click" Margin="10" HorizontalAlignment="Left"/>
 
         <TabControl Grid.Row="1" Margin="10">
+
             <TabItem Header="Записи">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
+
+                    <StackPanel Orientation="Horizontal" Margin="5">
                         <Button Content="Создать запись" Click="CreateAppointment_Click" Margin="5"/>
                         <Button Content="Перенести" Click="RescheduleAppointment_Click" Margin="5"/>
                         <Button Content="Отменить" Click="CancelAppointment_Click" Margin="5"/>
+                        <TextBlock Text="Поиск клиента:" VerticalAlignment="Center" Margin="10,0,5,0"/>
                         <TextBox x:Name="ClientSearchBox" Width="200" Margin="5" TextChanged="SearchClient_TextChanged"/>
                     </StackPanel>
+
                     <DataGrid x:Name="AppointmentsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
-                            <DataGridTextColumn Header="Клиент" Binding="{Binding ClientName}"/>
-                            <DataGridTextColumn Header="Мастер" Binding="{Binding MasterName}"/>
-                            <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceTypeName}"/>
-                            <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat='dd.MM.yyyy'}"/>
-                            <DataGridTextColumn Header="Время" Binding="{Binding Time}"/>
-                            <DataGridTextColumn Header="Статус" Binding="{Binding Status}"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Клиент" Binding="{Binding ClientName}" Width="150"/>
+                            <DataGridTextColumn Header="Мастер" Binding="{Binding MasterName}" Width="150"/>
+                            <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceTypeName}" Width="120"/>
+                            <DataGridTextColumn Header="Дата" Binding="{Binding Date, StringFormat='dd.MM.yyyy'}" Width="100"/>
+                            <DataGridTextColumn Header="Время" Binding="{Binding Time}" Width="80"/>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
@@ -43,15 +47,17 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
+
                     <Button Content="Отметить как выданный" Click="MarkOrderDelivered_Click" Margin="5" HorizontalAlignment="Left"/>
-                    <DataGrid x:Name="OrdersGrid" Grid.Row="1" AutoGenerateColumns="False">
+
+                    <DataGrid x:Name="OrdersGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
-                            <DataGridTextColumn Header="Клиент" Binding="{Binding ClientName}"/>
-                            <DataGridTextColumn Header="Дата заказа" Binding="{Binding OrderDate, StringFormat='dd.MM.yyyy'}"/>
-                            <DataGridTextColumn Header="Дата получения" Binding="{Binding DeliveryDate, StringFormat='dd.MM.yyyy'}"/>
-                            <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat='{}{0:C}'}"/>
-                            <DataGridTextColumn Header="Статус" Binding="{Binding Status}"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Клиент" Binding="{Binding ClientName}" Width="150"/>
+                            <DataGridTextColumn Header="Дата заказа" Binding="{Binding OrderDate, StringFormat='dd.MM.yyyy'}" Width="100"/>
+                            <DataGridTextColumn Header="Дата получения" Binding="{Binding DeliveryDate, StringFormat='dd.MM.yyyy'}" Width="120"/>
+                            <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat='{}{0:C}'}" Width="100"/>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="100"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
@@ -63,19 +69,27 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
+
+                    <StackPanel Orientation="Horizontal" Margin="5">
                         <Button Content="Добавить" Click="AddProduct_Click" Margin="5"/>
                         <Button Content="Изменить" Click="EditProduct_Click" Margin="5"/>
                         <Button Content="Заморозить/Разморозить" Click="ToggleProductActive_Click" Margin="5"/>
                         <Button Content="Скидка" Click="SetDiscount_Click" Margin="5"/>
                     </StackPanel>
-                    <DataGrid x:Name="ProductsGrid" Grid.Row="1" AutoGenerateColumns="False">
+
+                    <DataGrid x:Name="ProductsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
-                            <DataGridTextColumn Header="Название" Binding="{Binding Name}"/>
-                            <DataGridTextColumn Header="Цена" Binding="{Binding Price, StringFormat='{}{0:C}'}"/>
-                            <DataGridTextColumn Header="Скидка" Binding="{Binding Discount}"/>
-                            <DataGridCheckBoxColumn Header="Активен" Binding="{Binding IsActive}"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="200"/>
+                            <DataGridTextColumn Header="Цена" Binding="{Binding Price, StringFormat='{}{0:C}'}" Width="100"/>
+                            <DataGridTextColumn Header="Скидка %" Binding="{Binding Discount}" Width="80"/>
+                            <DataGridTemplateColumn Header="Активен" Width="80">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <CheckBox IsChecked="{Binding IsActive, Mode=OneWay}" IsEnabled="False" HorizontalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
@@ -87,14 +101,16 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
+
+                    <StackPanel Orientation="Horizontal" Margin="5">
                         <Button Content="Добавить" Click="AddManufacturer_Click" Margin="5"/>
                         <Button Content="Изменить" Click="EditManufacturer_Click" Margin="5"/>
                     </StackPanel>
-                    <DataGrid x:Name="ManufacturersGrid" Grid.Row="1" AutoGenerateColumns="False">
+
+                    <DataGrid x:Name="ManufacturersGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
-                            <DataGridTextColumn Header="Название" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
@@ -106,14 +122,16 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
+
+                    <StackPanel Orientation="Horizontal" Margin="5">
                         <Button Content="Добавить" Click="AddProductType_Click" Margin="5"/>
                         <Button Content="Изменить" Click="EditProductType_Click" Margin="5"/>
                     </StackPanel>
-                    <DataGrid x:Name="ProductTypesGrid" Grid.Row="1" AutoGenerateColumns="False">
+
+                    <DataGrid x:Name="ProductTypesGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
-                            <DataGridTextColumn Header="Название" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
@@ -125,18 +143,21 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <StackPanel Orientation="Horizontal">
+
+                    <StackPanel Orientation="Horizontal" Margin="5">
                         <Button Content="Добавить" Click="AddServiceType_Click" Margin="5"/>
                         <Button Content="Изменить" Click="EditServiceType_Click" Margin="5"/>
                     </StackPanel>
-                    <DataGrid x:Name="ServiceTypesGrid" Grid.Row="1" AutoGenerateColumns="False">
+
+                    <DataGrid x:Name="ServiceTypesGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
-                            <DataGridTextColumn Header="Название" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                            <DataGridTextColumn Header="Название" Binding="{Binding Name}" Width="*"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
             </TabItem>
+
         </TabControl>
     </Grid>
 </Page>

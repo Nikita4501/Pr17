@@ -10,7 +10,6 @@ namespace Pr17.Windows
         public OrderCheckoutWindow()
         {
             InitializeComponent();
-            // Установка диапазона дат
             DeliveryDatePicker.DisplayDateStart = DateTime.Today;
             DeliveryDatePicker.DisplayDateEnd = DateTime.Today.AddDays(7);
         }
@@ -23,7 +22,6 @@ namespace Pr17.Windows
                 return;
             }
 
-            // Проверка наличия товаров в корзине
             var cartItems = Core.Context.Cart.Where(c => c.UserId == Core.CurrentUser.Id).ToList();
             if (!cartItems.Any())
             {
@@ -31,7 +29,6 @@ namespace Pr17.Windows
                 return;
             }
 
-            // Проверка выбранной даты
             if (DeliveryDatePicker.SelectedDate == null)
             {
                 MessageBox.Show("Выберите дату получения");
@@ -45,10 +42,8 @@ namespace Pr17.Windows
                 return;
             }
 
-            // Получение способа оплаты
             string paymentMethod = ((ComboBoxItem)PaymentMethodCombo.SelectedItem).Content.ToString();
 
-            // Создание заказа
             var order = new Orders
             {
                 ClientId = Core.CurrentUser.Id,
@@ -60,7 +55,6 @@ namespace Pr17.Windows
             Core.Context.Orders.Add(order);
             Core.Context.SaveChanges();
 
-            // Перенос товаров из корзины в заказ
             foreach (var item in cartItems)
             {
                 Core.Context.OrderItems.Add(new OrderItems
@@ -68,11 +62,10 @@ namespace Pr17.Windows
                     OrderId = order.Id,
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
-                    Price = item.Products.Price // цена на момент заказа
+                    Price = item.Products.Price
                 });
             }
 
-            // Очистка корзины
             Core.Context.Cart.RemoveRange(cartItems);
             Core.Context.SaveChanges();
 
