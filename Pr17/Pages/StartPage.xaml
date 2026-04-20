@@ -8,7 +8,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Панель управления -->
         <StackPanel Margin="10">
             <WrapPanel>
                 <Button x:Name="LoginButton" Content="Вход" Click="LoginButton_Click" Margin="5" Width="80"/>
@@ -25,27 +24,43 @@
             </WrapPanel>
         </StackPanel>
 
-        <!-- Основная область -->
         <Grid Grid.Row="1" Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Список типов услуг -->
             <GroupBox Header="Услуги" Grid.Column="0" Margin="5">
-                <ListBox x:Name="ServiceTypesListBox" SelectionChanged="ServiceTypesListBox_SelectionChanged"
-                         DisplayMemberPath="Name"/>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ListBox x:Name="ServiceTypesListBox" SelectionChanged="ServiceTypesListBox_SelectionChanged" Margin="5">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="5" Margin="0,0,0,5" Padding="8">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="Gray" FontSize="12" Margin="0,2,0,0"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                            <TextBlock Text="Цена: " FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Price, StringFormat='{}{0:C}'}" Foreground="Green"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Длительность: " FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Duration, StringFormat='{}{0} мин'}" Foreground="DodgerBlue"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ScrollViewer>
             </GroupBox>
 
-            <!-- Список мастеров выбранной услуги -->
             <GroupBox Header="Мастера" Grid.Column="1" Margin="5">
                 <ListBox x:Name="MastersListBox" SelectionChanged="MastersListBox_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
                                 <TextBlock Text="{Binding FullName}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding Specialization}" FontStyle="Italic" Foreground="Gray"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

@@ -12,7 +12,6 @@ namespace Pr17.Pages
         {
             public int Id { get; set; }
             public string FullName { get; set; }
-            public string Specialization { get; set; }
         }
 
         public StartPage()
@@ -38,12 +37,11 @@ namespace Pr17.Pages
                 .Select(u => new MasterInfo
                 {
                     Id = u.Id,
-                    FullName = u.LastName + " " + u.FirstName,
-                    Specialization = u.Specialization
+                    FullName = u.LastName + " " + u.FirstName
                 })
                 .ToList();
 
-            var allMasters = new List<MasterInfo> { new MasterInfo { Id = 0, FullName = "Все", Specialization = "" } };
+            var allMasters = new List<MasterInfo> { new MasterInfo { Id = 0, FullName = "Все" } };
             allMasters.AddRange(masters);
             MasterFilter.ItemsSource = allMasters;
             MasterFilter.DisplayMemberPath = "FullName";
@@ -68,6 +66,34 @@ namespace Pr17.Pages
                 AccountButton.Visibility = Visibility.Collapsed;
                 LogoutButton.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void ApplyFilters(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedType = ServiceTypeFilter.SelectedItem as ServiceTypes;
+            var selectedMaster = MasterFilter.SelectedItem as MasterInfo;
+
+            int? typeId = (selectedType != null && selectedType.Id != 0) ? selectedType.Id : (int?)null;
+            int? masterId = (selectedMaster != null && selectedMaster.Id != 0) ? selectedMaster.Id : (int?)null;
+
+            var query = Core.Context.MasterServices.AsQueryable();
+            if (typeId.HasValue)
+                query = query.Where(ms => ms.ServiceTypeId == typeId.Value);
+            if (masterId.HasValue)
+                query = query.Where(ms => ms.MasterId == masterId.Value);
+
+            var filteredMasters = query
+                .Select(ms => ms.Users)
+                .Where(u => u.Roles.Name == "Мастер" && u.IsActive)
+                .Select(u => new MasterInfo
+                {
+                    Id = u.Id,
+                    FullName = u.LastName + " " + u.FirstName
+                })
+                .Distinct()
+                .ToList();
+
+            MastersListBox.ItemsSource = filteredMasters;
         }
 
         private void ServiceTypesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -108,40 +134,12 @@ namespace Pr17.Pages
                 .Select(u => new MasterInfo
                 {
                     Id = u.Id,
-                    FullName = u.LastName + " " + u.FirstName,
-                    Specialization = u.Specialization
+                    FullName = u.LastName + " " + u.FirstName
                 })
                 .Distinct()
                 .ToList();
 
             MastersListBox.ItemsSource = masters;
-        }
-
-        private void ApplyFilters(object sender, SelectionChangedEventArgs e)
-        {
-            ServiceTypes selectedType = null;
-
-            var filterType = ServiceTypeFilter.SelectedItem as ServiceTypes;
-            if (filterType != null && filterType.Id != 0)
-                selectedType = filterType;
-            else
-            {
-                selectedType = ServiceTypesListBox.SelectedItem as ServiceTypes;
-            }
-
-            if (selectedType != null)
-            {
-                if (ServiceTypesListBox.SelectedItem == null ||
-                    (ServiceTypesListBox.SelectedItem as ServiceTypes).Id != selectedType.Id)
-                {
-                    ServiceTypesListBox.SelectedItem = selectedType;
-                }
-                LoadMastersForServiceType(selectedType.Id);
-            }
-            else
-            {
-                MastersListBox.ItemsSource = null;
-            }
         }
 
         private void MastersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

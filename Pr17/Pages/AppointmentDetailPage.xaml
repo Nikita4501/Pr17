@@ -9,6 +9,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -19,7 +20,8 @@
         <TextBlock x:Name="ServiceText" Grid.Row="2"/>
         <TextBlock x:Name="ClientText" Grid.Row="3"/>
         <TextBlock x:Name="PhoneText" Grid.Row="4"/>
+        <TextBlock x:Name="CommentText" Grid.Row="5" TextWrapping="Wrap" Margin="0,5"/>
 
-        <Button x:Name="CompleteButton" Grid.Row="6" Content="Завершить запись" Width="150" Click="CompleteButton_Click"/>
+        <Button x:Name="CompleteButton" Grid.Row="7" Content="Завершить запись" Width="150" Click="CompleteButton_Click"/>
     </Grid>
 </Page>

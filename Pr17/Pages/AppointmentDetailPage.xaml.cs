@@ -24,6 +24,7 @@ namespace Pr17.Pages
             ServiceText.Text = $"Услуга: {appointment.ServiceTypes.Name}";
             ClientText.Text = $"Клиент: {appointment.Users.LastName} {appointment.Users.FirstName} {appointment.Users.MiddleName}";
             PhoneText.Text = $"Телефон: {appointment.Users.Phone}";
+            CommentText.Text = $"Комментарий: {appointment.Comment ?? "Нет"}";
 
             CompleteButton.IsEnabled = appointment.Status != "Выполнена";
         }

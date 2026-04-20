@@ -19,8 +19,23 @@ namespace Pr17.Pages
         private void LoadData()
         {
             _allProducts = Core.Context.Products.ToList();
-            TypeFilter.ItemsSource = Core.Context.ProductTypes.ToList();
-            ManufacturerFilter.ItemsSource = Core.Context.Manufacturers.ToList();
+
+            var productTypes = Core.Context.ProductTypes.ToList();
+            var allProductTypes = new List<ProductTypes> { new ProductTypes { Id = 0, Name = "Все" } };
+            allProductTypes.AddRange(productTypes);
+            TypeFilter.ItemsSource = allProductTypes;
+            TypeFilter.DisplayMemberPath = "Name";
+            TypeFilter.SelectedIndex = 0;
+
+            var manufacturers = Core.Context.Manufacturers.ToList();
+            var allManufacturers = new List<Manufacturers> { new Manufacturers { Id = 0, Name = "Все" } };
+            allManufacturers.AddRange(manufacturers);
+            ManufacturerFilter.ItemsSource = allManufacturers;
+            ManufacturerFilter.DisplayMemberPath = "Name";
+            ManufacturerFilter.SelectedIndex = 0;
+
+            SortCombo.SelectedIndex = 0;
+
             ApplyFilters(null, null);
         }
 
@@ -31,10 +46,10 @@ namespace Pr17.Pages
             if (!string.IsNullOrWhiteSpace(SearchBox.Text))
                 query = query.Where(p => p.Name.Contains(SearchBox.Text));
 
-            if (TypeFilter.SelectedItem is ProductTypes selectedType)
+            if (TypeFilter.SelectedItem is ProductTypes selectedType && selectedType.Id != 0)
                 query = query.Where(p => p.ProductTypeId == selectedType.Id);
 
-            if (ManufacturerFilter.SelectedItem is Manufacturers selectedMan)
+            if (ManufacturerFilter.SelectedItem is Manufacturers selectedMan && selectedMan.Id != 0)
                 query = query.Where(p => p.ManufacturerId == selectedMan.Id);
 
             var sortItem = SortCombo.SelectedItem as ComboBoxItem;
@@ -66,7 +81,11 @@ namespace Pr17.Pages
 
         private void AddToCart_Click(object sender, RoutedEventArgs e)
         {
-            if (Core.CurrentUser == null) return;
+            if (Core.CurrentUser == null)
+            {
+                MessageBox.Show("Для добавления в корзину необходимо авторизоваться");
+                return;
+            }
             var product = ((Button)sender).Tag;
             int id = (int)product.GetType().GetProperty("Id").GetValue(product);
             var existing = Core.Context.Cart.FirstOrDefault(c => c.UserId == Core.CurrentUser.Id && c.ProductId == id);
@@ -78,7 +97,19 @@ namespace Pr17.Pages
             MessageBox.Show("Товар добавлен в корзину");
         }
 
-        private void CartButton_Click(object sender, RoutedEventArgs e) => NavigationService?.Navigate(new CartPage());
-        private void BackButton_Click(object sender, RoutedEventArgs e) => NavigationService?.GoBack();
+        private void CartButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Core.CurrentUser == null)
+            {
+                MessageBox.Show("Для просмотра корзины необходимо авторизоваться");
+                return;
+            }
+            NavigationService?.Navigate(new CartPage());
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService?.GoBack();
+        }
     }
 }

@@ -43,7 +43,7 @@ namespace Pr17.Windows
                 {
                     ProductImage.Source = new System.Windows.Media.Imaging.BitmapImage(new System.Uri(_product.ImagePath, System.UriKind.RelativeOrAbsolute));
                 }
-                catch { /* Игнорируем ошибки загрузки изображения */ }
+                catch { }
             }
 
             AddToCartButton.IsEnabled = Core.CurrentUser != null && _product.IsActive;
